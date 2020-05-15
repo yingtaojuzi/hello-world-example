@@ -1,24 +1,52 @@
 pipeline {
   agent {
     node {
-      label 'master'
+      label 'any'
     }
-    
+
   }
   stages {
     stage('Build') {
-      steps {
-        withMaven(maven: 'M3') {
-          sh 'mvn clean install'
+      parallel {
+        stage('Build') {
+          steps {
+            withMaven(maven: 'M3') {
+              sh 'mvn clean install'
+            }
+
+          }
         }
-        
+
+        stage('Build1') {
+          steps {
+            withMaven(maven: 'M3') {
+              sh 'mvn clean install'
+            }
+
+          }
+        }
+
       }
     }
+
     stage('Results') {
-      steps {
-        junit '**/target/surefire-reports/TEST-*.xml'
-        archiveArtifacts 'target/*.jar'
+      parallel {
+        stage('Results') {
+          steps {
+            junit '**/target/surefire-reports/TEST-*.xml'
+            archiveArtifacts 'target/*.jar'
+          }
+        }
+
+        stage('Results1') {
+          steps {
+            sh 'echo "done"'
+            archiveArtifacts 'target/*.jar'
+          }
+        }
+
       }
     }
+
   }
 }
